@@ -1,38 +1,27 @@
 import os
-import time
-from google import genai
-from dotenv import load_dotenv
+import google.generativeai as genai
 
-load_dotenv()
-API_KEY = os.getenv("GOOGLE_API_KEY")
+def generate_prediction(text, trends, subject):
+    api_key = os.getenv("GOOGLE_API_KEY")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-pro')
 
-client = genai.Client(api_key=API_KEY) if API_KEY else None
-
-def generate_prediction(past_text, trends, subject):
-    if not client:
-        return "❌ API Key missing. Please check the Secrets/Environment settings."
-
-    model_queue = ["gemini-3-flash-preview", "gemini-2.5-flash"]
-    
     prompt = f"""
-    Act as a Senior Board Examiner for {subject}. 
-    Task: Create a 2026 Model Paper based on trends: {trends}.
-    Reference Data: {past_text[:5000]}
+    You are an expert examiner for the Pakistani Board (BISE).
+    SUBJECT: {subject}
     
-    Layout: Section A (MCQs), Section B (Short Questions), Section C (Long Questions).
+    DATA PROVIDED FROM PAST PAPERS:
+    {text}
+    
+    ANALYSIS OF TRENDS:
+    {trends}
+    
+    INSTRUCTIONS:
+    1. ONLY use the topics found in the DATA above. 
+    2. If the data is insufficient or irrelevant, state: "Error: Could not find syllabus-specific data in the uploaded file."
+    3. Format the output as a REAL Board Paper with Sections A (MCQs), B (Short), and C (Long).
+    4. Ensure the terminology matches the {subject} textbook used in Pakistan.
     """
     
-    for model_name in model_queue:
-        try:
-            response = client.models.generate_content(
-                model=model_name, 
-                contents=prompt
-            )
-            return response.text
-        except Exception as e:
-            if "429" in str(e):
-                time.sleep(2)
-                continue
-            return f"❌ Model Error ({model_name}): {str(e)}"
-            
-    return "❌ Server Busy. Too many students are predicting papers right now! Please wait 60 seconds."
+    response = model.generate_content(prompt)
+    return response.text
