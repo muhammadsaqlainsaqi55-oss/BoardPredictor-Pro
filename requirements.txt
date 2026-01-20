@@ -2,8 +2,4 @@ streamlit
 google-genai
 python-dotenv
 reportlab
-pdf2image
-easyocr
-numpy
-Pillow
 pypdf
