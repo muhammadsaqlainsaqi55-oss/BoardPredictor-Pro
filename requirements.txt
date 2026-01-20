@@ -6,3 +6,4 @@ pdf2image
 easyocr
 numpy
 Pillow
+pypdf
